@@ -83,6 +83,7 @@ IDEA： [下载 IntelliJ IDEA](https://www.jetbrains.com/zh-cn/idea/download/?se
 配置Maven环境变量
 ![](https://pic1.imgdb.cn/item/680e36ee58cb8da5c8d05604.png)
 ![](https://pic1.imgdb.cn/item/680e370758cb8da5c8d05613.png)
+
 双击Path
 ![](https://pic1.imgdb.cn/item/680e371258cb8da5c8d05619.png)
 填写  %MAVEN_HOME%\bin
