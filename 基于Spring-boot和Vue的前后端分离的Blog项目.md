@@ -18,32 +18,53 @@
 5. 配置Java环境变量
    按住快捷键Win+Q
    搜索“编辑系统环境变量”
-   ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054ba.png)![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b6.png)
+   
+   ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054ba.png)
+
+   ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b6.png)
+   
    ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b8.png)
+   
    变量名：JAVA_HOME
    变量值：**你自己的JAVA安装目录**
    点击 确定
+   
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d05548.png)
   
    找到PATH，双击打开
+   
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d0554b.png)
+   
    新建并填写  %JAVA_HOME%\bin
+   
    ![](https://pic1.imgdb.cn/item/680e362958cb8da5c8d0559e.png)
+   
    填写完后全部确定
-6. 快捷键Win+R,运行cmd
+7. 快捷键Win+R,运行cmd
+   
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d0554a.png)
+   
    在cmd中输入  javac -version
+   
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d05549.png)
+   
    若正确输出版本号则环境配置正确
+   
 ### 安装开发工具（VSCode/IDEA)
 选择你自己喜欢的
-VSCode：[Download Visual Studio Code - Mac, Linux, Windows](https://code.visualstudio.com/Download)
+VSCode：
+
+[Download Visual Studio Code - Mac, Linux, Windows](https://code.visualstudio.com/Download)
+
 安装与你系统对应的版本
+
 ![](https://pic1.imgdb.cn/item/680e364a58cb8da5c8d055b0.png)
 
-   IDEA： [下载 IntelliJ IDEA](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)
-   选择免费的社区版
-   ![](https://pic1.imgdb.cn/item/680e364a58cb8da5c8d055b3.png)
+IDEA： [下载 IntelliJ IDEA](https://www.jetbrains.com/zh-cn/idea/download/?section=windows)
+   
+选择免费的社区版
+  
+![](https://pic1.imgdb.cn/item/680e364a58cb8da5c8d055b3.png)
 
 ### 安装MySQL数据库
 安装
