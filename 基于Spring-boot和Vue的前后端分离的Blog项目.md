@@ -5,8 +5,10 @@
 2. ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b9.png)
    如果想下载其他版本请自行在网上搜索
 3. 等待下载完成后安装
+   
    ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b5.png)
    下一步
+   
    ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b7.png)](https://imgse.com/i/pETRBAP)
    选择是否更换安装目录，建议默认即可，如果你C盘空间够的话。
    ==请记住你的安装目录！请记住你的安装目录！请记住你的安装目录！==
