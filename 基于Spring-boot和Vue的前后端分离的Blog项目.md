@@ -7,13 +7,15 @@
 3. 等待下载完成后安装
    
    ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b5.png)
+   
    下一步
    
-   ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b7.png)](https://imgse.com/i/pETRBAP)
+   ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b7.png)
+   
    选择是否更换安装目录，建议默认即可，如果你C盘空间够的话。
    ==请记住你的安装目录！请记住你的安装目录！请记住你的安装目录！==
    安装完成
-4. 配置Java环境变量
+5. 配置Java环境变量
    按住快捷键Win+Q
    搜索“编辑系统环境变量”
    ![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054ba.png)![](https://pic1.imgdb.cn/item/680e34a158cb8da5c8d054b6.png)
@@ -28,7 +30,7 @@
    新建并填写  %JAVA_HOME%\bin
    ![](https://pic1.imgdb.cn/item/680e362958cb8da5c8d0559e.png)
    填写完后全部确定
-5. 快捷键Win+R,运行cmd
+6. 快捷键Win+R,运行cmd
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d0554a.png)
    在cmd中输入  javac -version
    ![](https://pic1.imgdb.cn/item/680e358358cb8da5c8d05549.png)
