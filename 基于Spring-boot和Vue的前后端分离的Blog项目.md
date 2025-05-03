@@ -298,6 +298,7 @@ import lombok.Data;
   
 @Data  
 public class User {  
+	@TableId(type = IdType.AUTO)
     private Integer id;  
     private String username;  
     private String password;  
@@ -434,9 +435,9 @@ public class UserController {
 如果使用nvm，则需要卸载之前安装过的Node.js，没安装过则可以忽略。
 选择nvm，[开始 下载nvm - nvm中文官网](https://nvm.uihtm.com/doc/download-nvm.html)
 本地下载最新版。解压安装程序并运行。安装流程不多赘述，不过要记住安装时选择的目录。
-==一共有两个目录，一个是nvm目录，一个是Node.js目录==
+==一共有两个目录，一个是nvm目录，一个是Nodejs目录==
 **配置nvm环境**
-打开系统环境变量，配置NVM_HOME，填写nvm目录，配置NVM_SYMLINK，填写Node.js目录
+打开系统环境变量，配置NVM_HOME，填写nvm目录，配置NVM_SYMLINK，填写Nodejs目录
 ![](https://pic1.imgdb.cn/item/680f858758cb8da5c8d26568.png)
 然后在path里添加%NVM_HOME%与%NVM_SYMLINK%
 ![](https://pic1.imgdb.cn/item/680f860558cb8da5c8d2658f.png)
@@ -446,17 +447,648 @@ public class UserController {
 ![](https://pic1.imgdb.cn/item/680f86d958cb8da5c8d265e5.png)
 选择LTS列下的偶数版本
 输入`nvm install 版本号`进行安装
-安装完成之后输入`node -v`与`npm -v`进行验证，出现版本号则安装完成
+然后输入 `nvm use 版本号` 启用这个版本
+启用完成之后输入`node -v`与`npm -v`进行验证，出现版本号则安装完成
 ![](https://pic1.imgdb.cn/item/680f87ba58cb8da5c8d26635.png)
 ## 选择前端框架Vue
+
+先了解一下Vue和单页面应用。
+**Vue.js**（简称 Vue）是一个用于构建用户界面的 **渐进式 JavaScript 框架**
+**单页面应用（Single Page Application, SPA）** 是一种 Web 应用模式，整个应用只有一个 HTML 页面，通过动态加载内容（如 JavaScript）实现页面切换，**无需重新加载整个页面**。
+
 创建一个新的空文件夹来开始进行Vue的搭建
 进入VSCode，打开这个空文件夹，打开终端输入`npm create vite@latest ./ -- --template vue-ts`，之后左边会出现一堆文件。根据它的提示依次输入`npm install`，`npm run dev`
 最后Ctrl+鼠标左键，点击蓝色的地址。
+以后每次运行都可以在对应的目录下输入`npm run dev`
 ![](https://pic1.imgdb.cn/item/680f8bf458cb8da5c8d26848.png)
 便会得到这样一个页面
 ![](https://pic1.imgdb.cn/item/680f8c5c58cb8da5c8d26878.png)
 在VSCode插件商店搜索Vue安装官方插件
 ![](https://pic1.imgdb.cn/item/680f8cd458cb8da5c8d268b8.png)
 
+## 安装第三方库
+安装element
+[安装 | Element Plus](https://element-plus.org/zh-CN/guide/installation.html)
+element提供了开箱即用的各种组件，可以拿来就用而不用自己写，如果你想要其他的组件库请自行寻找
+在终端输入`npm install element-plus --save`
+![](https://pic1.imgdb.cn/item/6810c8bf58cb8da5c8d46806.png)
+
+在全局注册element
+打开main.ts，写入
+```ts
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+const app = createApp(App)
+app.use(ElementPlus)
+app.mount('#app')
+```
+![](https://pic1.imgdb.cn/item/6810d33d58cb8da5c8d46c40.png)
+
+安装router
+Vue Router 是 Vue.js 官方的路由管理器，它与 Vue.js 核心深度集成，让构建单页面应用(SPA)变得轻而易举。
+终端输入`npm install vue-router@4`
+![](https://pic1.imgdb.cn/item/6810cdf758cb8da5c8d46a2c.png)
+
+安装axios
+Vue 版本推荐使用 axios 来完成 ajax 请求。
+Axios 是一个基于 Promise 的 HTTP 库，可以用在浏览器和 node.js 中。
+终端输入`npm install axios`
+![](https://pic1.imgdb.cn/item/6810d15d58cb8da5c8d46ba1.png)
 ## 实现登录与注册
+
+### 创建一个登录视图
+在创建登录注册View之前，先把它自带的样式删干净。
+找到src目录下的style.css,全部删除
+![](https://pic1.imgdb.cn/item/6810b95458cb8da5c8d460bd.png)
+找到App.vue，删除 template 和 style 里的内容
+![](https://pic1.imgdb.cn/item/6810bf4658cb8da5c8d46360.png)
+使用Vue在你更改内容后会实时热更新网页上的内容，十分便捷直观。
+当你删完之后你应该会发现页面一片空白了
+
+现在开始创建登录视图
+在src下新建views，创建Login.vue
+![](https://pic1.imgdb.cn/item/6810d51158cb8da5c8d46cc9.png)
+```vue
+<template>
+    <div class="login-container">
+        <el-card class="login-card">
+            <div class="login-header">
+                <h2>登录</h2>
+            </div>
+            
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form"
+                @submit.prevent="handleLogin">
+                <el-form-item prop="username">
+                    <p>用户名：</p>
+                    <el-input v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="User" />
+                </el-form-item>
+                <el-form-item prop="password">
+                    <p>密码：</p>
+                    <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" prefix-icon="Lock"
+                        show-password />
+                </el-form-item>
+                <el-form-item prop="remember" class="remember-me">
+                    <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" class="login-btn" native-type="submit" :loading="loading">登录</el-button>
+                </el-form-item>
+            </el-form>
+            <div class="login-footer">
+                <el-link type="primary" @click="forgetDialogVisible = true">忘记密码?</el-link>
+                <el-link type="primary" @click="registerDialogVisible = true">注册账号</el-link>
+            </div>
+        </el-card>
+        <!-- 忘记密码对话框 -->
+        <el-dialog v-model="forgetDialogVisible" title="忘记密码" width="30%">
+            <span>请联系系统管理员重置密码</span>
+            <template #footer>
+                <el-button @click="forgetDialogVisible = false">关闭</el-button>
+            </template>
+        </el-dialog>
+
+  
+
+        <!-- 注册对话框 -->
+        <el-dialog v-model="registerDialogVisible" title="注册账号" width="30%">
+            <span>请联系系统管理员创建账号</span>
+            <template #footer>
+                <el-button @click="registerDialogVisible = false">关闭</el-button>
+            </template>
+        </el-dialog>
+    </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+  
+const router = useRouter()
+
+// 表单引用
+const loginFormRef = ref(null)
+  
+// 响应式数据
+const loginForm = reactive({
+    username: '',
+    password: '',
+    remember: false
+})
+
+const loading = ref(false)
+const forgetDialogVisible = ref(false)
+const registerDialogVisible = ref(false)
+  
+// 验证规则
+const loginRules = reactive({
+    username: [
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+    ]
+})
+  
+// 登录方法
+const handleLogin = async () => {
+    try {
+        // 验证表单
+        const valid = await loginFormRef.value.validate()
+        if (!valid) return
+        loading.value = true
+        // 这里替换为实际的登录API调用
+        // const response = await axios.post('/api/login', loginForm)
+
+        // 模拟登录成功
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        ElMessage.success('登录成功')
+        router.push('/')
+    } catch (error) {
+        ElMessage.error(error.response?.data?.message || '登录失败')
+    } finally {
+        loading.value = false
+    }
+}
+
+</script>
+
+<style scoped>
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+}
+  
+.login-card {
+    width: 400px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    color: #409EFF;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+.login-btn {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.login-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+</style>
+```
+
+这仅仅是一个最基础的框架，还没有实现任何功能
+
+### 实现路由
+首先安装@types/node
+![](https://pic1.imgdb.cn/item/6810dbd958cb8da5c8d4706c.png)
+修改vite.config.ts
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  }
+})
+```
+![](https://pic1.imgdb.cn/item/6810dc7458cb8da5c8d472e7.png)
+在src下创建新文件shims-vue.d.ts
+```ts
+declare module '*.vue' {
+    import { DefineComponent } from 'vue'
+    const component: DefineComponent<{}, {}, any>
+    export default component
+}
+```
+![](https://pic1.imgdb.cn/item/6810dd2858cb8da5c8d47bbf.png)
+创建路由
+在src下创建新文件夹router，在里面创建index.ts
+
+```ts
+import { createRouter, createWebHistory } from "vue-router";
+
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        {
+            path: '/login',
+            name: 'Login',
+            component: () => import('@/views/Login.vue'),
+        }
+    ]
+})
+
+export default router
+```
+
+![](https://pic1.imgdb.cn/item/6810dd9858cb8da5c8d48376.png)
+在main.ts里全局使用router
+写入`import router from './router'` 和 `app.use(router)`
+![](https://pic1.imgdb.cn/item/6810de3d58cb8da5c8d48e4f.png)
+在App.vue里加入`<router-view />`
+![](https://pic1.imgdb.cn/item/6810de9358cb8da5c8d493ab.png)
+
+现在我们打开浏览器，输入 http://localhost:5173/login 就可以看见我们刚刚写的登录视图了
+
+### 实现前后端Api对接
+创建前端Api
+在src下创建新文件api，创建新文件index.js
+
+```ts
+import axios from 'axios';
+
+// 创建axios实例
+const api = axios.create({
+  baseURL: 'http://localhost:8080', // SpringBoot后端API基础URL
+  timeout: 5000
+});
+
+export default api;
+```
+![](https://pic1.imgdb.cn/item/6810ecef58cb8da5c8d4a376.png)
+创建新文件LoginApi.ts，这个方法可以将用户名与密码传给后端
+```ts
+import api from '@/api'
+
+// 用户登录
+export function login(username: string, password: string) {
+  return api.post('/user/login', {
+    username,
+    password
+  })
+}
+```
+
+接下来打开IDEA
+首先实现**跨域资源共享 (CORS)**
+跨域资源共享（**CORS**，Cross-Origin Resource Sharing）是一种基于 HTTP 头的安全机制，用于控制不同源的网页资源（如前端 JavaScript）能否访问另一个源的服务器数据。它是浏览器强制实施的策略，旨在防止恶意网站窃取用户数据。
+
+新建软件包config，新建Java类CorsConfig
+```Java
+package com.example.demo.config;  
+  
+import org.springframework.context.annotation.Configuration;  
+import org.springframework.web.servlet.config.annotation.CorsRegistry;  
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;  
+  
+@Configuration  
+public class CorsConfig implements WebMvcConfigurer {  
+    @Override  
+    public void addCorsMappings(CorsRegistry registry) {  
+        registry.addMapping("/**")  
+                .allowedOrigins("http://localhost:5173") // 前端地址  
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  
+                .allowedHeaders("*")  
+                .allowCredentials(true);  
+    }  
+}
+```
+![](https://pic1.imgdb.cn/item/6810ee0158cb8da5c8d4a411.png)
+
+接下来新建一个登录控制器LoginController
+```Java
+package com.example.demo.controller;  
+  
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;  
+import com.example.demo.entity.User;  
+import com.example.demo.mapper.UserMapper;  
+import org.springframework.beans.factory.annotation.Autowired;  
+import org.springframework.web.bind.annotation.PostMapping;  
+import org.springframework.web.bind.annotation.RequestBody;  
+import org.springframework.web.bind.annotation.RequestMapping;  
+import org.springframework.web.bind.annotation.RestController;  
+  
+@RestController  
+@RequestMapping("/user")  
+public class LoginController {  
+    @Autowired  
+    private UserMapper userMapper;  
+  
+    @PostMapping("/login")  
+    public String login(@RequestBody User user) {  
+        System.out.println("登录："+user);  
+        QueryWrapper<User> wrapper = new QueryWrapper<>();  
+        wrapper.eq("username", user.getUsername());  
+        User dbUser = userMapper.selectOne(wrapper);  
+        if (dbUser == null) {  
+            return "该用户不存在！";  
+        } else if (!dbUser.getPassword().equals(user.getPassword())) {  
+            return "密码错误！";  
+        }  
+        return "登录成功";  
+    }  
+}
+```
+![](https://pic1.imgdb.cn/item/6810ee6f58cb8da5c8d4a442.png)
+这是一个最最简单的控制器，接收参数是前端传来的user，dbuser来获取数据库里与前端传来的username对应的用户，所以在这里可以发现，数据库的用户名不能有重复的。后面就是几个简单的判断。
+这个控制器实现了基本功能，但是安全性和健壮性不是很高，我在这仅仅作为演示。
+
+回到我们的Vue
+修改如图所示的代码，调用登录方法并将返回值赋给response，我们打印一下response
+```vue
+const response = login(loginForm.username, loginForm.password)
+console.log(response)
+ElMessage.warning(response.data)
+```
+![](https://pic1.imgdb.cn/item/6810f2bd58cb8da5c8d4a624.png)
+现在你可以在登录界面输入用户名与密码，登录一下试试，你会发现页面上方会弹出登录后端返回的信息，说明Api对接成功了。
+按F12打开控制台，可以看到console.log打印出来的信息
+![](https://pic1.imgdb.cn/item/6810f35058cb8da5c8d4a663.png)
+
+### 关于工程化与约定
+
+写到这里，想必你会有一点疑惑，为什么要创建这么多文件夹，这么多文件，而且命名风格与格式要求，这里就简单介绍一下**工程化**与**约定**。
+
+在软件开发中，**工程化**和**约定**是提升团队协作效率、保障代码质量和维护性的两大核心手段。
+ **1. 工程化（Engineering）**
+**定义**：通过工具、流程、标准化技术栈等手段，将开发、构建、测试、部署等环节系统化、自动化，减少人为不可控因素。
+**核心目标**：
+- **自动化**：通过工具（如 Webpack、GitHub Actions）替代重复劳动。
+- **标准化**：统一技术栈、目录结构、构建流程等。
+- **可维护性**：代码结构清晰，文档完善，便于后续迭代。
+- **质量保障**：集成代码检查（ESLint）、测试（Jest）、性能监控等。
+
+比如我们用Spring boot和Vue等工具来实现快速开发，而不用重复造轮子，这就是一种工程化的体现。
+
+**2. 约定（Convention）**
+**定义**：团队或社区达成的共识性规则，包括代码风格、命名规范、设计模式等，通常通过文档或工具固化。
+**核心目标**：
+- **一致性**：统一代码风格（如变量命名用 `camelCase` 还是 `snake_case`）。
+- **降低认知成本**：新成员快速理解项目结构（如 `src/components` 存放组件）。
+- **减少决策成本**：避免在琐碎细节上争论（如缩进用空格还是 Tab）。
+
+我们之所以创建这么多文件夹和文件，是为了统一规范，可快速帮助我们理解整个项目的结构。
+什么地方该放什么，哪些文件有什么关联，这个文件的作用是什么，通过一种达成共识的约定，我们可以快速上手并修改。
+比如我们约定，将所有视图文件都放在views里，又或者将所有控制器都放在controller里。
+Java的命名风格是驼峰命名，每个单词开头大写。MySQL命名风格是下划线，每个单词中间加一个下划线。
+
+### 简单写一个注册视图并对接Api
+
+#### 注册视图
+注册视图和登录视图的框架完全一样，只是改了名字，你完全可以复制登录框架的代码，在登录的代码基础上改一改就是注册视图了。
+![](https://pic1.imgdb.cn/item/6816346f58cb8da5c8d9f7dc.png)
+我在此还是贴上我的代码
+```vue
+<template>
+    <div class="register-container">
+        <el-card class="register-card">
+            <div class="register-header">
+                <h2>注册</h2>
+            </div>
+
+            <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="register-form"
+                @submit.prevent="handleRegister">
+                <el-form-item prop="username">
+                    <p>用户名：</p>
+                    <el-input v-model="registerForm.username" placeholder="请输入用户名" prefix-icon="User" />
+                </el-form-item>
+
+                <el-form-item prop="password">
+                    <p>密码：</p>
+                    <el-input v-model="registerForm.password" type="password" placeholder="请输入密码" prefix-icon="Lock"
+                        show-password />
+                </el-form-item>
+
+                <el-form-item prop="repassword">
+                    <p>重复密码：</p>
+                    <el-input v-model="registerForm.repassword" type="password" placeholder="请重复密码" prefix-icon="Lock"
+                        show-password />
+                </el-form-item>
+
+                <el-form-item prop="remember" class="remember-me">
+                    <el-checkbox v-model="registerForm.remember">记住我</el-checkbox>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" class="register-btn" native-type="submit"
+                        :loading="loading">注册</el-button>
+                </el-form-item>
+            </el-form>
+
+            <div class="register-footer">
+                <el-link type="primary" @click="forgetDialogVisible = true">忘记密码?</el-link>
+                <el-link type="primary" @click="router.push('/login')">登录账号</el-link>
+            </div>
+        </el-card>
+
+        <!-- 忘记密码对话框 -->
+        <el-dialog v-model="forgetDialogVisible" title="忘记密码" width="30%">
+            <span>请联系系统管理员重置密码</span>
+            <template #footer>
+                <el-button @click="forgetDialogVisible = false">关闭</el-button>
+            </template>
+        </el-dialog>
+    </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { ElMessage, ElNotification } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { register } from '@/api/Api'
+
+const router = useRouter()
+
+// 表单引用
+const registerFormRef = ref(null)
+
+// 响应式数据
+const registerForm = reactive({
+    username: '',
+    password: '',
+    repassword: '',
+    remember: false
+})
+
+const loading = ref(false)
+const forgetDialogVisible = ref(false)
+
+// 验证规则
+const registerRules = reactive({
+    username: [
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+    ],
+    repassword: [
+        { required: true, message: '请重复密码', trigger: 'blur' },
+        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' },
+        {
+            validator: (rule, value, callback) => {
+                if (value !== registerForm.password) {
+                    callback(new Error('两次输入的密码不一致'))
+                } else {
+                    callback()
+                }
+            }, trigger: 'blur'
+        }
+    ],
+})
+
+// 注册方法
+const handleRegister = async () => {
+    try {
+        // 验证表单
+        const valid = await registerFormRef.value.validate()
+        if (!valid) return
+
+        loading.value = true
+
+        const response = await register(registerForm.username, registerForm.password)
+        // ElMessage.warning(response.data)
+        // console.log(response.data)
+        if (response.data == '注册成功') {
+            // 三秒后跳转到登录页面
+            const countdown = ref(3);
+
+            // 显示通知并动态更新倒计时
+            const notification = ElNotification.success({
+                title: '注册成功',
+                message: `${countdown.value}秒后跳转至登录页面`, // 初始消息
+                duration: 0, // 不自动关闭
+                showClose: false, // 隐藏关闭按钮（可选）
+            });
+
+            const countdownElement = document.querySelector('.el-notification__content p');
+            const timer = setInterval(() => {
+                countdown.value--;
+                console.log(countdownElement.textContent)
+                countdownElement.textContent = `${countdown.value}秒后跳转至登录页面`;
+
+                if (countdown.value <= 0) {
+                    clearInterval(timer);
+                    notification.close(); // 关闭通知
+                    router.push('/login'); // 跳转登录页
+                }
+            }, 1000);
+        } else {
+            ElMessage.error('用户名已存在')
+        }
+
+    } catch (error) {
+        ElMessage.error(error.response?.data?.message || '注册失败')
+    } finally {
+        loading.value = false
+    }
+}
+</script>
+
+<style scoped>
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+}
+
+.register-card {
+    width: 400px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.register-header h2 {
+    color: #409EFF;
+}
+
+.register-form {
+    margin-top: 20px;
+}
+
+.register-btn {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.register-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+</style>
+```
+可以发现并没有改太多的地方。
+#### 对接注册api
+我将原来的LoginApi改名为Api，更通用一点，记得改名后要把之前导入这个Api的地方同样也改名。
+![](https://pic1.imgdb.cn/item/6816365758cb8da5c8d9f8f6.png)
+然后添加
+```ts
+const register = (username: string, password: string) => {
+  return api.post('/user/register', {
+    username,
+    password
+  })
+}
+```
+之前是在function前面加上export，导出方法，现在可以在后面统一export
+```ts
+export {
+	login,
+	register
+}
+```
+当然你也可以在每个函数面前加export，两种不同的方法罢了。
+
+我们来到IDEA，编写后端的Controller
+![](https://pic1.imgdb.cn/item/68163cdd58cb8da5c8d9fc48.png)
+在LoginController里添加
+```Java
+@PostMapping("/register")  
+public  String register(@RequestBody User user) {  
+    QueryWrapper<User> wrapper = new QueryWrapper<>();  
+    wrapper.eq("username", user.getUsername());  
+    User dbUser = userMapper.selectOne(wrapper);  
+    System.out.println(dbUser);  
+    System.out.println(user);  
+    if (dbUser == null) {  
+        userMapper.insert(user);  
+        return "注册成功";  
+    }  
+    return "用户名已存在";  
+}
+```
+
+最后进行测试，别忘记运行两个项目
+输入用户名密码点击注册后，你应该可以在MySQL数据库的用户表里看见刚刚注册的用户信息
 
