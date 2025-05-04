@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 编辑器</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        #html-output {
+            border: 1px solid #ccc;
+            padding: 15px;
+            min-height: 100px;
+            background: #f9f9f9;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #4285f4;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .file-input-label:hover {
+            background: #3367d6;
+        }
+
+        /* 代码块容器样式 - 更明显的背景 */
+        .code-block-container {
+            position: relative;
+            margin: 1.5em 0;
+            background-color: #282c34;
+            /* 深色背景 */
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* 添加阴影 */
+        }
+
+        /* 代码块样式 */
+        pre {
+            position: relative;
+            padding: 1.5em;
+            margin: 0;
+            background-color: #282c34 !important;
+            /* 强制深色背景 */
+            color: #abb2bf;
+            /* 浅色文字 */
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        pre code {
+            font-size: 1.3em;
+            /* 比默认稍大的字体 */
+            line-height: 1.2;
+            /* 增加行高提升可读性 */
+        }
+
+        /* 复制按钮样式调整 */
+        .copy-button {
+            position: absolute;
+            right: 1em;
+            top: 1em;
+            padding: 0.3em 0.6em;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.8em;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            opacity: 1;
+        }
+
+        .code-block-container:hover .copy-button {
+            opacity: 1;
+        }
+
+        .copy-button:active {
+            background-color: #d0d0d0;
+        }
+
+        /* 图片样式限制 */
+        #html-output img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+
+            #html-output {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Markdown 编辑器</h2>
+
+    <label for="file-upload" class="file-input-label">选择MD文件</label>
+    <input type="file" id="file-upload" accept=".md" style="display: none;">
+
+    <textarea id="markdown-input" placeholder="MD文件内容将显示在这里..."></textarea>
+    <div id="html-output">预览内容将显示在这里...</div>
+
+    <script>
+        // 初始化marked.js
+        marked.setOptions({
+            highlight: function (code, lang) {
+                const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // 获取DOM元素
+        const markdownInput = document.getElementById('markdown-input');
+        const htmlOutput = document.getElementById('html-output');
+        const fileUpload = document.getElementById('file-upload');
+
+        // 更新预览函数
+        function updatePreview() {
+            const markdownText = markdownInput.value;
+            htmlOutput.innerHTML = DOMPurify.sanitize(marked.parse(markdownText));
+
+            // 为每个代码块添加复制按钮
+            document.querySelectorAll('pre').forEach((preBlock) => {
+                // 检查是否已经添加过容器
+                if (preBlock.parentNode.className !== 'code-block-container') {
+                    // 创建容器
+                    const container = document.createElement('div');
+                    container.className = 'code-block-container';
+
+                    // 将pre元素放入容器
+                    preBlock.parentNode.insertBefore(container, preBlock);
+                    container.appendChild(preBlock);
+
+                    // 添加复制按钮
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-button';
+                    copyButton.textContent = '复制';
+                    copyButton.addEventListener('click', () => {
+                        const code = preBlock.querySelector('code').textContent;
+                        navigator.clipboard.writeText(code).then(() => {
+                            copyButton.textContent = '已复制!';
+                            setTimeout(() => {
+                                copyButton.textContent = '复制';
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('复制失败:', err);
+                            // 降级方案：使用document.execCommand
+                            const range = document.createRange();
+                            range.selectNode(preBlock.querySelector('code'));
+                            window.getSelection().removeAllRanges();
+                            window.getSelection().addRange(range);
+                            document.execCommand('copy');
+                            window.getSelection().removeAllRanges();
+                            copyButton.textContent = '已复制!';
+                            setTimeout(() => {
+                                copyButton.textContent = '复制';
+                            }, 2000);
+                        });
+                    });
+                    container.appendChild(copyButton);
+                }
+            });
+
+            // 高亮代码块
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+
+            // 确保图片不超过容器宽度
+            document.querySelectorAll('#html-output img').forEach(img => {
+                if (img.width > htmlOutput.clientWidth) {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                }
+            });
+        }
+
+        // 设置文本区域变化监听
+        markdownInput.addEventListener('input', updatePreview);
+
+        // 文件选择处理
+        fileUpload.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file && file.name.endsWith('.md')) {
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    markdownInput.value = event.target.result;
+                    // 直接调用预览函数
+                    updatePreview();
+                };
+
+                reader.onerror = function () {
+                    alert('文件读取失败');
+                };
+
+                reader.readAsText(file);
+            } else {
+                alert('请选择.md格式的文件');
+            }
+        });
+
+        // 初始空预览
+        updatePreview();
+
+        // 窗口大小改变时重新计算图片大小
+        window.addEventListener('resize', function () {
+            document.querySelectorAll('#html-output img').forEach(img => {
+                if (img.width > htmlOutput.clientWidth) {
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
